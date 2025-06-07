@@ -11,21 +11,18 @@ const gameboard = (function () {
   };
 
   const resetGameboard = () => {
-    for (op in board) {
-      board.pop();
-      board.unshift(" ");
-    }
+    board = ["", "", "", "", "", "", "", "", ""];
     return board;
+  };
+
+  const updateBoard = (squares) => {
+    squares.forEach((square) => {
+      square.innerHTML = "";
+    });
   };
 
   const addMark = (mark, location) => {
     board.splice(location, 1, mark);
-  };
-
-  const updateBoard = () => {
-    squares.forEach((square) => {
-      square.innerHTML = "";
-    });
   };
 
   return { getGameboard, resetGameboard, addMark, updateBoard };
@@ -43,13 +40,60 @@ let p1;
 let p2;
 
 const gameController = (function () {
-  const copy = gameboard.getGameboard();
+  let copy = gameboard.getGameboard();
+  let squares = document.querySelectorAll(".square");
+  let turnDisplay = document.querySelector(".turn");
 
-  const setPlayer = () => {
+  squares.forEach((square) => {
+    square.addEventListener("click", () => {
+      handleChoice(square);
+    });
+  });
+
+  const startGame = () => {
     p1 = new Player("X");
     p2 = new Player("O");
   };
+
+  const handleTurn = () => {
+    if (turn === "X") {
+      turnDisplay.innerHTML = `Turn: O turn's`;
+    } else {
+      turnDisplay.innerHTML = `Turn: X turn's`;
+    }
+  };
+
+  const checkChoice = (square) => {
+    if (isWinner == false) {
+      if (!square.getHTML()) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const handleChoice = (square) => {
+    let canChange;
+    canChange = checkChoice(square);
+    if (canChange == true) {
+      if (switchTime == 0) {
+        switchTime++;
+      } else {
+        if (turn == "X") {
+          turn = "O";
+        } else {
+          turn = "X";
+        }
+        switchTime++;
+      }
+      square.innerHTML = turn;
+      gameboard.addMark(turn, square.dataset.position);
+
+      verifyWin();
+    }
+  };
   const verifyWin = () => {
+    handleTurn();
     const combinations = [
       [0, 1, 2],
       [3, 4, 5],
@@ -71,77 +115,28 @@ const gameController = (function () {
       }, {});
 
       if (total.X == 3 || total.O == 3) {
-        winner.innerHTML = `${turn} is the winner`;
+        winner.innerHTML = `Winner: ${turn} is the winner`;
         isWinner = true;
       }
-    }
-  };
-  const startGame = () => {
-    let cont = 0;
-    gameController.setPlayer();
-    while (cont < 3) {
-      p1.makeAplay();
-      cont++;
-      p2.makeAplay();
-      cont++;
-
-      if (cont == 3) {
-        while (winner == "" || cont != 9) {
-          gameController.verifyRow();
-          p1.makeAplay();
-          cont++;
-          p2.makeAplay();
-          cont++;
-        }
+      if (switchTime === 9 && isWinner === false) {
+        winner.innerHTML = "Draw!";
       }
     }
   };
+
   const resetBtn = document.querySelector(".reset");
 
   const resetGame = () => {
     gameboard.resetGameboard();
     isWinner = false;
-    gameboard.updateBoard();
-    winner.innerHTML = "";
+    gameboard.updateBoard(squares);
+    winner.innerHTML = "Winner: ";
+    turn = "X";
+    switchTime = 0;
+    copy = gameboard.getGameboard();
   };
   resetBtn.addEventListener("click", resetGame);
-  return { setPlayer, startGame, verifyRow: verifyWin };
+  return { startGame };
 })();
 
-// gameController.startGame();
-let squares = document.querySelectorAll(".square");
-
-squares.forEach((square) => {
-  square.addEventListener("click", () => {
-    handleChoice(square);
-  });
-});
-
-function checkChoice(square) {
-  if (isWinner == false) {
-    if (!square.getHTML()) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function handleChoice(square) {
-  let canChange;
-  canChange = checkChoice(square);
-  if (canChange == true) {
-    if (switchTime == 0) {
-      switchTime++;
-    } else {
-      if (turn == "X") {
-        turn = "O";
-      } else {
-        turn = "X";
-      }
-    }
-    square.innerHTML = turn;
-    gameboard.addMark(turn, square.dataset.position);
-
-    gameController.verifyRow();
-  }
-}
+gameController.startGame();

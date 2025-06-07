@@ -34,3 +34,10 @@
   font-size: 30px;
   font-weight: bolder;
 }
+
+.reset {
+  margin-top: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+}
