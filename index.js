@@ -1,11 +1,13 @@
 // vou ter players, o game board e o placar
 let turn = "X";
 let switchTime = 0;
+let isWinner = false;
+let winner = document.querySelector(".winner");
 const gameboard = (function () {
   let board = ["", "", "", "", "", "", "", "", ""];
 
   const getGameboard = () => {
-    return [...board];
+    return board;
   };
 
   const resetGameboard = () => {
@@ -18,11 +20,12 @@ const gameboard = (function () {
 
   const addMark = (mark, location) => {
     board.splice(location, 1, mark);
-    // console.log(board);
   };
 
   const updateBoard = () => {
-    console.table(board);
+    squares.forEach((square) => {
+      square.innerHTML = "";
+    });
   };
 
   return { getGameboard, resetGameboard, addMark, updateBoard };
@@ -34,7 +37,6 @@ const Player = function (name) {
   this.makeAplay = function () {
     local = window.prompt("posi");
     gameboard.addMark(name, local);
-    gameboard.updateBoard();
   };
 };
 let p1;
@@ -42,12 +44,12 @@ let p2;
 
 const gameController = (function () {
   const copy = gameboard.getGameboard();
-  let result = [];
+
   const setPlayer = () => {
     p1 = new Player("X");
     p2 = new Player("O");
   };
-  const verifyRow = () => {
+  const verifyWin = () => {
     const combinations = [
       [0, 1, 2],
       [3, 4, 5],
@@ -68,19 +70,13 @@ const gameController = (function () {
         return obj;
       }, {});
 
-      if (total.X == 3) {
-        console.log("X wins");
+      if (total.X == 3 || total.O == 3) {
+        winner.innerHTML = `${turn} is the winner`;
+        isWinner = true;
       }
-
-      if (total.O == 3) {
-        console.log("O wins");
-      }
-      console.log(total);
-      console.log("-----");
     }
   };
   const startGame = () => {
-    let winner = "";
     let cont = 0;
     gameController.setPlayer();
     while (cont < 3) {
@@ -100,7 +96,16 @@ const gameController = (function () {
       }
     }
   };
-  return { setPlayer, startGame, verifyRow };
+  const resetBtn = document.querySelector(".reset");
+
+  const resetGame = () => {
+    gameboard.resetGameboard();
+    isWinner = false;
+    gameboard.updateBoard();
+    winner.innerHTML = "";
+  };
+  resetBtn.addEventListener("click", resetGame);
+  return { setPlayer, startGame, verifyRow: verifyWin };
 })();
 
 // gameController.startGame();
@@ -113,8 +118,10 @@ squares.forEach((square) => {
 });
 
 function checkChoice(square) {
-  if (!square.getHTML()) {
-    return true;
+  if (isWinner == false) {
+    if (!square.getHTML()) {
+      return true;
+    }
   }
   return false;
 }
@@ -134,6 +141,7 @@ function handleChoice(square) {
     }
     square.innerHTML = turn;
     gameboard.addMark(turn, square.dataset.position);
+
     gameController.verifyRow();
   }
 }
