@@ -134,6 +134,7 @@ const gameController = (function () {
     turn = "X";
     switchTime = 0;
     copy = gameboard.getGameboard();
+    turnDisplay.innerHTML = `Turn: X turn's`;
   };
   resetBtn.addEventListener("click", resetGame);
   return { startGame };
